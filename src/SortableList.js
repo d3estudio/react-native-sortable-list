@@ -39,6 +39,8 @@ export default class SortableList extends Component {
     onChangeOrder: PropTypes.func,
     onActivateRow: PropTypes.func,
     onReleaseRow: PropTypes.func,
+
+    hideWhenLoading: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -47,7 +49,8 @@ export default class SortableList extends Component {
     autoscrollAreaSize: 60,
     manuallyActivateRows: false,
     showsVerticalScrollIndicator: true,
-    showsHorizontalScrollIndicator: true
+    showsHorizontalScrollIndicator: true,
+    hideWhenLoading: false,
   }
 
   /**
@@ -217,7 +220,7 @@ export default class SortableList extends Component {
   }
 
   render() {
-    let { contentContainerStyle, innerContainerStyle, horizontal, style, showsVerticalScrollIndicator, showsHorizontalScrollIndicator } = this.props;
+    let { contentContainerStyle, innerContainerStyle, horizontal, style, showsVerticalScrollIndicator, showsHorizontalScrollIndicator, hideWhenLoading } = this.props;
     const { animated, contentHeight, contentWidth, scrollEnabled } = this.state;
     const containerStyle = StyleSheet.flatten([style])
     innerContainerStyle = [
@@ -246,11 +249,11 @@ export default class SortableList extends Component {
           showsVerticalScrollIndicator={showsVerticalScrollIndicator}
           onScroll={this._onScroll}>
           {this._renderHeader()}
-          <Animated.View style={[innerContainerStyle, { opacity: this._contentOpacity }]}>
+          <Animated.View style={[innerContainerStyle, hideWhenLoading && { opacity: this._contentOpacity }]}>
             {this._renderRows()}
           </Animated.View>
 
-          <Animated.View style={{ opacity: this._contentOpacity }}>
+          <Animated.View style={hideWhenLoading && { opacity: this._contentOpacity }}>
             {this._renderFooter()}
           </Animated.View>
         </ScrollView>
