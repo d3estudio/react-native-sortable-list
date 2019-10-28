@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { ScrollView, View, StyleSheet, Platform, RefreshControl, ViewPropTypes, Animated } from 'react-native';
 import { shallowEqual, swapArrayElements } from './utils';
 import Row from './Row';
-import reactotron from 'reactotron-react-native';
 
 const AUTOSCROLL_INTERVAL = 100;
 const ZINDEX = Platform.OS === 'ios' ? 'zIndex' : 'elevation';
