@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ScrollView, View, StyleSheet, Platform, RefreshControl, ViewPropTypes } from 'react-native';
+import { ScrollView, View, StyleSheet, Platform, RefreshControl, ViewPropTypes, Animated } from 'react-native';
 import { shallowEqual, swapArrayElements } from './utils';
 import Row from './Row';
 
@@ -38,6 +38,8 @@ export default class SortableList extends Component {
     onChangeOrder: PropTypes.func,
     onActivateRow: PropTypes.func,
     onReleaseRow: PropTypes.func,
+
+    hideWhenLoading: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -46,7 +48,8 @@ export default class SortableList extends Component {
     autoscrollAreaSize: 60,
     manuallyActivateRows: false,
     showsVerticalScrollIndicator: true,
-    showsHorizontalScrollIndicator: true
+    showsHorizontalScrollIndicator: true,
+    hideWhenLoading: false,
   }
 
   /**
@@ -61,6 +64,8 @@ export default class SortableList extends Component {
   _resolveRowLayout = {};
 
   _contentOffset = { x: 0, y: 0 };
+  _contentOpacity = new Animated.Value(0);
+  _showBackdrop = true;
 
   state = {
     animated: false,
@@ -214,7 +219,7 @@ export default class SortableList extends Component {
   }
 
   render() {
-    let { contentContainerStyle, innerContainerStyle, horizontal, style, showsVerticalScrollIndicator, showsHorizontalScrollIndicator } = this.props;
+    let { contentContainerStyle, innerContainerStyle, horizontal, style, showsVerticalScrollIndicator, showsHorizontalScrollIndicator, hideWhenLoading } = this.props;
     const { animated, contentHeight, contentWidth, scrollEnabled } = this.state;
     const containerStyle = StyleSheet.flatten([style])
     innerContainerStyle = [
@@ -243,10 +248,13 @@ export default class SortableList extends Component {
           showsVerticalScrollIndicator={showsVerticalScrollIndicator}
           onScroll={this._onScroll}>
           {this._renderHeader()}
-          <View style={innerContainerStyle}>
+          <Animated.View style={[innerContainerStyle, hideWhenLoading && { opacity: this._contentOpacity }]}>
             {this._renderRows()}
-          </View>
-          {this._renderFooter()}
+          </Animated.View>
+
+          <Animated.View style={hideWhenLoading && { opacity: this._contentOpacity }}>
+            {this._renderFooter()}
+          </Animated.View>
         </ScrollView>
       </View>
     );
@@ -361,9 +369,18 @@ export default class SortableList extends Component {
             contentWidth,
           }, () => {
             this.setState({ animated: true });
+            this.showContent();
           });
         });
       });
+  }
+
+  showContent() {
+    Animated.timing(this._contentOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   }
 
   scrollToBottom = () => {
